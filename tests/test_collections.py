@@ -34,6 +34,7 @@ def test_dict():
         False: String(),
         1: Bool(),
         "integer": Integer(),
+        3.3: Float(optional=True),
     }).validate("obj", {
         False: "string",
         1: True,

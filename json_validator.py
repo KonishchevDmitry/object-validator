@@ -45,6 +45,12 @@ class MissingParameter(ValidationError):
 
 
 class Object(object):
+    optional = False
+
+    def __init__(self, optional=False):
+        if optional:
+            self.optional = True
+
     def validate(self, name, obj):
         raise Exception("Not implemented.")
 
@@ -115,7 +121,11 @@ class Dict(Object):
             key_name = _dict_key_name(name, key)
 
             if key not in obj:
-                raise MissingParameter(key_name)
+                if template.optional:
+                    # TODO: iterate over template?
+                    continue
+                else:
+                    raise MissingParameter(key_name)
 
             obj[key] = template.validate(key_name, obj[key])
 
