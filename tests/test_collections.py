@@ -6,7 +6,7 @@ import sys
 
 import pytest
 
-from json_validator import Bool, Integer, Float, String, List, Dict
+from json_validator import Bool, Integer, Float, String, List, AbstractDict, Dict
 from json_validator import InvalidType, MissingParameter, UnknownParameter
 
 PY2 = sys.version_info < (3,)
@@ -25,6 +25,34 @@ def test_list():
     assert pytest.raises(InvalidType, lambda:
         List(Bool()).validate("list", [False, 10, True])
     ).value.object_name == "list[1]"
+
+
+def test_abstract_dict():
+    AbstractDict().validate("obj", {
+        True: 1,
+        0: False,
+        3.3: "float",
+        "string": "string",
+    })
+
+    AbstractDict(String(), Float()).validate("obj", {
+        "one": 1.0,
+        "two": 2.0,
+    })
+
+    assert pytest.raises(InvalidType, lambda:
+        AbstractDict(key_type=String()).validate("dict", {
+            True: "boolean",
+            "string": "a",
+        })
+    ).value.object_name == "dict[True]"
+
+    assert pytest.raises(InvalidType, lambda:
+        AbstractDict(value_type=String()).validate("dict", {
+            False: 0,
+            "string": "a",
+        })
+    ).value.object_name == "dict[False]"
 
 
 def test_dict():

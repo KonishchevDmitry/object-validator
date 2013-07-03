@@ -98,6 +98,47 @@ class List(Object):
 
 
 
+class AbstractDict(Object):
+    __key_type = None
+    __value_type = None
+
+    def __init__(self, key_type=None, value_type=None, **kwargs):
+        super(AbstractDict, self).__init__(**kwargs)
+
+        if key_type is not None:
+            self.__key_type = key_type
+
+        if value_type is not None:
+            self.__value_type = value_type
+
+
+    def validate(self, name, obj):
+        if type(obj) is not dict:
+            raise InvalidType(name, type(obj))
+
+        for key, value in obj.items():
+            if self.__key_type is None:
+                valid_key = key
+            else:
+                # TODO: name
+                valid_key = validate(_dict_key_name(name, key),
+                    key, self.__key_type)
+
+            if self.__value_type is None:
+                valid_value = value
+            else:
+                valid_value = validate(_dict_key_name(name, key),
+                    value, self.__value_type)
+
+            if valid_key is not key:
+                del obj[key]
+                obj[valid_key] = valid_value
+            elif valid_value is not value:
+                obj[valid_key] = valid_value
+
+        return obj
+
+
 class Dict(Object):
     __ignore_unknown = False
 
@@ -131,6 +172,9 @@ class Dict(Object):
 
         return obj
 
+
+def validate(name, obj, template):
+    template.validate(name, obj)
 
 def _list_value_name(list_name, index):
     return "{0}[{1}]".format(list_name, index)
