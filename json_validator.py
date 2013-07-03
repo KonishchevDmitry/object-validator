@@ -22,6 +22,13 @@ class ValidationError(Error):
         super(ValidationError, self).__init__(*args, **kwargs)
 
 
+class InvalidType(ValidationError):
+    def __init__(self, name, type):
+        super(InvalidType, self).__init__(
+            name, "{0} has an invalid type ({1}).", name, type.__name__)
+        self.object_name = name
+
+
 class UnknownParameter(ValidationError):
     def __init__(self, name):
         super(UnknownParameter, self).__init__(
@@ -36,16 +43,15 @@ class MissingParameter(ValidationError):
 
 
 class Object(object):
-    def validate(self, obj, name):
+    def validate(self, name, obj):
         raise Exception("Not implemented.")
 
 
 
 class _BasicType(Object):
-    def validate(self, obj, name):
+    def validate(self, name, obj):
         if type(obj) not in self._types:
-            raise ValidationError(name, "{0} has an invalid type ({1}).",
-                name, type(obj).__name__)
+            raise InvalidType(name, type(obj))
 
 
 class Bool(_BasicType):
@@ -64,6 +70,7 @@ class String(_BasicType):
     _types = (str,)
 
 
+
 class Dict(Object):
     __ignore_unknown = False
 
@@ -74,10 +81,9 @@ class Dict(Object):
             self.__ignore_unknown = True
 
 
-    def validate(self, obj, name):
+    def validate(self, name, obj):
         if type(obj) is not dict:
-            raise ValidationError(name, "{0} has an invalid type ({1}).",
-                name, type(obj).__name__)
+            raise InvalidType(name, type(obj))
 
         if not self.__ignore_unknown:
             unknown = set(obj) - set(self.__template)
@@ -90,7 +96,7 @@ class Dict(Object):
             if key not in obj:
                 raise MissingParameter(key_name)
 
-            template.validate(obj[key], key_name)
+            template.validate(key_name, obj[key])
 
 
 def _dict_key_name(dict_name, key_name):
