@@ -33,12 +33,14 @@ class UnknownParameter(ValidationError):
     def __init__(self, name):
         super(UnknownParameter, self).__init__(
             name, "Unknown parameter: {0}.", name)
+        self.object_name = name
 
 
 class MissingParameter(ValidationError):
     def __init__(self, name):
         super(MissingParameter, self).__init__(
             name, "{0} is missing.", name)
+        self.object_name = name
 
 
 
@@ -52,6 +54,8 @@ class _BasicType(Object):
     def validate(self, name, obj):
         if type(obj) not in self._types:
             raise InvalidType(name, type(obj))
+
+        return obj
 
 
 class Bool(_BasicType):
@@ -68,6 +72,23 @@ class Integer(_BasicType):
 
 class String(_BasicType):
     _types = (str,)
+
+
+class List(Object):
+    def __init__(self, template, **kwargs):
+        super(List, self).__init__(**kwargs)
+        self.__type = template
+
+
+    def validate(self, name, obj):
+        if type(obj) is not list:
+            raise InvalidType(name, type(obj))
+
+        for index, value in enumerate(obj):
+            obj[index] = self.__type.validate(
+                _list_value_name(name, index), value)
+
+        return obj
 
 
 
@@ -96,8 +117,13 @@ class Dict(Object):
             if key not in obj:
                 raise MissingParameter(key_name)
 
-            template.validate(key_name, obj[key])
+            obj[key] = template.validate(key_name, obj[key])
 
+        return obj
+
+
+def _list_value_name(list_name, index):
+    return "{0}[{1}]".format(list_name, index)
 
 def _dict_key_name(dict_name, key_name):
     return "{0}[{1!r}]".format(dict_name, key_name)
