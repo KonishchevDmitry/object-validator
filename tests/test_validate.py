@@ -7,7 +7,7 @@ import sys
 
 import pytest
 
-from json_validator import Bool, Integer, Float, String, List, AbstractDict, Dict, validate_object
+from json_validator import Bool, Integer, Float, String, List, Dict, DictScheme, validate_object
 from json_validator import InvalidTypeError, InvalidValueError, UnknownParameterError, MissingParameterError
 
 PY2 = sys.version_info < (3,)
@@ -34,13 +34,13 @@ ITEMS = [{
     },
 }]
 
-SCHEME = List(Dict({
+SCHEME = List(DictScheme({
     "id": Integer(choices=(0, 2)),
     "name": String(),
     "value": Float(),
     "zero": Bool(),
     "dividers": List(Integer()),
-    "dividers_map": AbstractDict(Integer(), Float()),
+    "dividers_map": Dict(Integer(), Float()),
 }))
 
 

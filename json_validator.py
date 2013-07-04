@@ -160,9 +160,14 @@ class String(_BasicType):
 class List(Object):
     """List validator."""
 
-    def __init__(self, scheme, **kwargs):
+    __scheme = None
+    """Value scheme."""
+
+    def __init__(self, scheme=None, **kwargs):
         super(List, self).__init__(**kwargs)
-        self.__scheme = scheme
+
+        if scheme is not None:
+            self.__scheme = scheme
 
 
     def validate(self, obj):
@@ -171,29 +176,36 @@ class List(Object):
         if type(obj) is not list:
             raise InvalidTypeError(obj)
 
-        for index, value in enumerate(obj):
-            try:
-                obj[index] = validate_scheme(value, self.__scheme)
-            except ValidationError as e:
-                e.prefix_object_name("[{0}]".format(index))
-                raise
+        if self.__scheme is not None:
+            for index, value in enumerate(obj):
+                try:
+                    obj[index] = validate_scheme(value, self.__scheme)
+                except ValidationError as e:
+                    e.prefix_object_name("[{0}]".format(index))
+                    raise
 
         return obj
 
 
 
-class AbstractDict(Object):
-    __key_type = None
-    __value_type = None
+class Dict(Object):
+    """Dictionary validator."""
+
+    __key_scheme = None
+    """Key scheme."""
+
+    __value_scheme = None
+    """Value scheme."""
+
 
     def __init__(self, key_type=None, value_type=None, **kwargs):
-        super(AbstractDict, self).__init__(**kwargs)
+        super(Dict, self).__init__(**kwargs)
 
         if key_type is not None:
-            self.__key_type = key_type
+            self.__key_scheme = key_type
 
         if value_type is not None:
-            self.__value_type = value_type
+            self.__value_scheme = value_type
 
 
     def validate(self, obj):
@@ -202,16 +214,16 @@ class AbstractDict(Object):
 
         for key, value in obj.items():
             try:
-                if self.__key_type is None:
+                if self.__key_scheme is None:
                     valid_key = key
                 else:
                     # TODO: name
-                    valid_key = validate_scheme(key, self.__key_type)
+                    valid_key = validate_scheme(key, self.__key_scheme)
 
-                if self.__value_type is None:
+                if self.__value_scheme is None:
                     valid_value = value
                 else:
-                    valid_value = validate_scheme(value, self.__value_type)
+                    valid_value = validate_scheme(value, self.__value_scheme)
 
                 if valid_key is not key:
                     del obj[key]
@@ -226,11 +238,11 @@ class AbstractDict(Object):
 
 
 
-class Dict(Object):
+class DictScheme(Object):
     __ignore_unknown = False
 
     def __init__(self, scheme, ignore_unknown=False, **kwargs):
-        super(Dict, self).__init__(**kwargs)
+        super(DictScheme, self).__init__(**kwargs)
         self.__scheme = scheme
         if ignore_unknown:
             self.__ignore_unknown = True
