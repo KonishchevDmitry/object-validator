@@ -2,6 +2,7 @@
 
 from __future__ import unicode_literals
 
+import copy
 import sys
 
 import pytest
@@ -14,109 +15,128 @@ if PY2:
     str = unicode
 
 
-def test_list():
-    List(Bool()).validate("obj", [])
-    List(Bool()).validate("obj", [True, False])
+def test_list_empty():
+    _validate([], List(Bool()))
+
+
+def test_list_full():
+    _validate([True, False], List(Bool()))
 
 
 def test_list_invalid_type():
     error = pytest.raises(InvalidTypeError, lambda:
-        List(Bool()).validate("list", tuple())
+        _validate(tuple(), List(Bool()))
     ).value
 
-    assert error.object_name == "list"
+    assert error.object_name == ""
     assert error.object_type == tuple
 
 
 def test_list_invalid_element_type():
     error = pytest.raises(InvalidTypeError, lambda:
-        List(Bool()).validate("list", [False, 10, True])
+        _validate([False, 10, True], List(Bool()))
     ).value
 
-    assert error.object_name == "list[1]"
+    assert error.object_name == "[1]"
     assert error.object_type == int
 
 
 
 def test_abstract_dict_default():
-    AbstractDict().validate("obj", {
+    _validate({
         True: 1,
         0: False,
         3.3: "float",
         "string": "string",
-    })
+    }, AbstractDict())
 
 
 def test_abstract_dict_key_value():
-    AbstractDict(String(), Float()).validate("obj", {
+    _validate({
         "one": 1.0,
         "two": 2.0,
-    })
+    }, AbstractDict(String(), Float()))
 
 
 def test_abstract_dict_invalid_key_type():
     error = pytest.raises(InvalidTypeError, lambda:
-        AbstractDict(key_type=String()).validate("dict", {
+        _validate({
             True: "boolean",
             "string": "a",
-        })
+        }, AbstractDict(key_type=String()))
     ).value
 
-    assert error.object_name == "dict[True]"
+    assert error.object_name == "[True]"
     assert error.object_type == bool
 
 
 def test_abstract_dict_invalid_value_type():
     error = pytest.raises(InvalidTypeError, lambda:
-        AbstractDict(value_type=String()).validate("dict", {
+        _validate({
             False: 0,
             "string": "a",
-        })
+        }, AbstractDict(value_type=String()))
     ).value
 
-    assert error.object_name == "dict[False]"
+    assert error.object_name == "[False]"
     assert error.object_type == int
 
 
 
 def test_dict_empty():
-    Dict({}).validate("obj", {})
+    _validate({}, Dict({}))
 
 
 def test_dict_with_schema():
-    Dict({
+    _validate({
+        False: "string",
+        1: True,
+        "integer": 10,
+    }, Dict({
         False: String(),
         1: Bool(),
         "integer": Integer(),
         3.3: Float(optional=True),
-    }).validate("obj", {
-        False: "string",
-        1: True,
-        "integer": 10,
-    })
+    }))
 
 
 def test_dict_invalid_type():
     error = pytest.raises(InvalidTypeError, lambda:
-        Dict({}).validate("dict", object())
+       _validate([],  Dict({}))
     ).value
 
-    assert error.object_name == "dict"
-    assert error.object_type == object
+    assert error.object_name == ""
+    assert error.object_type == list
 
 
 def test_dict_unknown_parameter():
-    assert pytest.raises(UnknownParameterError, lambda:
-        Dict({1: Bool()}).validate("dict", {
+    error = pytest.raises(UnknownParameterError, lambda:
+        _validate({
             1: True,
             False: "value",
-        })
-    ).value.object_name == "dict[False]"
+        }, Dict({1: Bool()}))
+    ).value
+
+    assert error.object_name == "[False]"
 
 
 def test_dict_missing_parameter():
-    assert pytest.raises(MissingParameterError, lambda:
-        Dict({1: Bool(), 2: String()}).validate("dict", {
+    error = pytest.raises(MissingParameterError, lambda:
+        _validate({
             2: "value",
-        })
-    ).value.object_name == "dict[1]"
+        }, Dict({1: Bool(), 2: String()}))
+    ).value
+
+    assert error.object_name == "[1]"
+
+
+
+def _validate(obj, scheme):
+    obj_copy = copy.deepcopy(obj)
+
+    try:
+        validated = scheme.validate(obj)
+    finally:
+        assert obj == obj_copy
+
+    assert validated is obj

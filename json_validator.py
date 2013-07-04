@@ -24,15 +24,29 @@ class ValidationError(Error):
         super(ValidationError, self).__init__(*args, **kwargs)
         self.object_name = name
 
+    def prefix_object_name(self, prefix):
+        """Adds a prefix to the object name."""
+
+        self.object_name = prefix + self.object_name
+
+    __str__ = lambda self: self.get_message()
+
+    if _PY2:
+        __unicode__ = __str__
+        __str__ = lambda self: self.get_message().encode()
+
 
 class InvalidTypeError(ValidationError):
     """Invalid object type (according to schema)."""
 
     def __init__(self, name, obj):
-        self.object_type = type(obj)
         super(InvalidTypeError, self).__init__(
-            name, "{0} has an invalid type: {1}.",
-            name, self.object_type.__name__)
+            name, "Invalid object type.")
+        self.object_type = type(obj)
+
+    def get_message(self):
+        return "{0} has an invalid type: {1}.".format(
+            self.object_name, self.object_type.__name__)
 
 
 class InvalidValueError(ValidationError):
@@ -40,8 +54,12 @@ class InvalidValueError(ValidationError):
 
     def __init__(self, name, value):
         super(InvalidValueError, self).__init__(
-            name, "{0} has an invalid value: {1!r}.", name, value)
+            name, "Invalid object value.")
         self.object_value = value
+
+    def get_message(self):
+        return "{0} has an invalid value: {1}.".format(
+            self.object_name, _repr(self.object_value))
 
 
 class UnknownParameterError(ValidationError):
@@ -49,7 +67,10 @@ class UnknownParameterError(ValidationError):
 
     def __init__(self, name):
         super(UnknownParameterError, self).__init__(
-            name, "Unknown parameter: {0}.", name)
+            name, "Unknown parameter.")
+
+    def get_message(self):
+        return "Unknown parameter: {0}.".format(self.object_name)
 
 
 class MissingParameterError(ValidationError):
@@ -57,7 +78,10 @@ class MissingParameterError(ValidationError):
 
     def __init__(self, name):
         super(MissingParameterError, self).__init__(
-            name, "{0} is missing.", name)
+            name, "Parameter is missing.")
+
+    def get_message(self):
+        return "{0} is missing.".format(self.object_name)
 
 
 
@@ -73,7 +97,7 @@ class Object(object):
             self.optional = True
 
 
-    def validate(self, name, obj):
+    def validate(self, obj):
         """Validates the specified object.
 
         Returns the validated object (possibly modified to satisfy the schema
@@ -99,14 +123,14 @@ class _BasicType(Object):
             self.__choices = choices
 
 
-    def validate(self, name, obj):
+    def validate(self, obj):
         """Validates the specified object."""
 
         if type(obj) not in self._types:
-            raise InvalidTypeError(name, obj)
+            raise InvalidTypeError("", obj)
 
         if self.__choices is not None and obj not in self.__choices:
-            raise InvalidValueError(name, obj)
+            raise InvalidValueError("", obj)
 
         return obj
 
@@ -141,15 +165,18 @@ class List(Object):
         self.__scheme = scheme
 
 
-    def validate(self, name, obj):
+    def validate(self, obj):
         """Validates the specified object."""
 
         if type(obj) is not list:
-            raise InvalidTypeError(name, obj)
+            raise InvalidTypeError("", obj)
 
         for index, value in enumerate(obj):
-            obj[index] = validate(
-                _list_value_name(name, index), value, self.__scheme)
+            try:
+                obj[index] = validate_scheme(value, self.__scheme)
+            except ValidationError as e:
+                e.prefix_object_name("[{0}]".format(index))
+                raise
 
         return obj
 
@@ -169,29 +196,31 @@ class AbstractDict(Object):
             self.__value_type = value_type
 
 
-    def validate(self, name, obj):
+    def validate(self, obj):
         if type(obj) is not dict:
-            raise InvalidTypeError(name, obj)
+            raise InvalidTypeError("", obj)
 
         for key, value in obj.items():
-            if self.__key_type is None:
-                valid_key = key
-            else:
-                # TODO: name
-                valid_key = validate(_dict_key_name(name, key),
-                    key, self.__key_type)
+            try:
+                if self.__key_type is None:
+                    valid_key = key
+                else:
+                    # TODO: name
+                    valid_key = validate_scheme(key, self.__key_type)
 
-            if self.__value_type is None:
-                valid_value = value
-            else:
-                valid_value = validate(_dict_key_name(name, key),
-                    value, self.__value_type)
+                if self.__value_type is None:
+                    valid_value = value
+                else:
+                    valid_value = validate_scheme(value, self.__value_type)
 
-            if valid_key is not key:
-                del obj[key]
-                obj[valid_key] = valid_value
-            elif valid_value is not value:
-                obj[valid_key] = valid_value
+                if valid_key is not key:
+                    del obj[key]
+                    obj[valid_key] = valid_value
+                elif valid_value is not value:
+                    obj[valid_key] = valid_value
+            except ValidationError as e:
+                e.prefix_object_name(_dict_key_name(key))
+                raise
 
         return obj
 
@@ -206,35 +235,50 @@ class Dict(Object):
             self.__ignore_unknown = True
 
 
-    def validate(self, name, obj):
+    def validate(self, obj):
         if type(obj) is not dict:
-            raise InvalidTypeError(name, obj)
+            raise InvalidTypeError("", obj)
 
         if not self.__ignore_unknown:
             unknown = set(obj) - set(self.__scheme)
             if unknown:
-                raise UnknownParameterError(_dict_key_name(name, unknown.pop()))
+                raise UnknownParameterError(_dict_key_name(unknown.pop()))
 
         for key, scheme in self.__scheme.items():
-            key_name = _dict_key_name(name, key)
-
             if key not in obj:
                 if scheme.optional:
                     # TODO: iterate over scheme?
                     continue
                 else:
-                    raise MissingParameterError(key_name)
+                    raise MissingParameterError(_dict_key_name(key))
 
-            obj[key] = validate(key_name, obj[key], scheme)
+            try:
+                obj[key] = validate_scheme(obj[key], scheme)
+            except ValidationError as e:
+                e.prefix_object_name(_dict_key_name(key))
+                raise
 
         return obj
 
 
-def validate(name, obj, scheme):
-    return scheme.validate(name, obj)
+def validate_scheme(obj, scheme):
+    return scheme.validate(obj)
+
+def validate_object(name, obj, scheme):
+    try:
+        return validate_scheme(obj, scheme)
+    except ValidationError as e:
+        e.prefix_object_name(name)
+        raise
 
 def _list_value_name(list_name, index):
     return "{0}[{1}]".format(list_name, index)
 
-def _dict_key_name(dict_name, key_name):
-    return "{0}[{1!r}]".format(dict_name, key_name)
+def _dict_key_name(key):
+    return "[{0}]".format(_repr(key))
+
+if _PY2:
+    def _repr(value):
+        return repr(value)[1:] if type(value) is str else repr(value)
+else:
+    _repr = repr

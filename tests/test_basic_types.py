@@ -15,73 +15,86 @@ if PY2:
 
 
 def test_bool():
-    Bool().validate("obj", True)
-    Bool().validate("obj", False)
+    _validate(True, Bool())
 
 
 def test_bool_invalid_type():
     error = pytest.raises(InvalidTypeError, lambda:
-        Bool().validate("invalid", 0)
+        _validate(0, Bool())
     ).value
 
-    assert error.object_name == "invalid"
+    assert error.object_name == ""
     assert error.object_type == int
 
 
 
-def test_integer():
-    Integer().validate("obj", 1)
+def test_integer_int():
+    _validate(1, Integer())
 
-    if PY2:
-        Integer().validate("obj", long(1))
+
+if PY2:
+    def test_integer_long():
+        _validate(long(1), Integer())
 
 
 def test_integer_invalid_type():
     error = pytest.raises(InvalidTypeError, lambda:
-        Integer().validate("invalid", True)
+        _validate(True, Integer())
     ).value
 
-    assert error.object_name == "invalid"
+    assert error.object_name == ""
     assert error.object_type == bool
 
 
 
 def test_float():
-    Float().validate("obj", 0.1)
+    _validate(0.1, Float())
 
 
 def test_float_invalid_type():
     error = pytest.raises(InvalidTypeError, lambda:
-        Float().validate("invalid", 1)
+        _validate(1, Float())
     ).value
 
-    assert error.object_name == "invalid"
+    assert error.object_name == ""
     assert error.object_type == int
 
 
 
 def test_string():
-    String().validate("obj", "string")
+    _validate("string", String())
 
 
 def test_string_invalid_type():
     error = pytest.raises(InvalidTypeError, lambda:
-        String().validate("invalid", b"bytes")
+        _validate(b"bytes", String())
     ).value
 
-    assert error.object_name == "invalid"
+    assert error.object_name == ""
     assert error.object_type == bytes
 
 
 
 def test_choices():
-    String(choices=("a", "b")).validate("obj", "b")
+    _validate("b", String(choices=("a", "b")))
 
 
 def test_choices_invalid_value():
     error = pytest.raises(InvalidValueError, lambda:
-        String(choices=("a", "b")).validate("invalid", "c")
+        _validate("c", String(choices=("a", "b")))
     ).value
 
-    assert error.object_name == "invalid"
+    assert error.object_name == ""
     assert error.object_value == "c"
+
+
+
+def _validate(obj, scheme):
+    obj_copy = obj
+
+    try:
+        validated = scheme.validate(obj)
+    finally:
+        assert obj == obj_copy
+
+    assert validated is obj
