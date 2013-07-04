@@ -18,9 +18,15 @@ def test_bool():
     Bool().validate("obj", True)
     Bool().validate("obj", False)
 
-    assert pytest.raises(InvalidTypeError, lambda:
+
+def test_bool_invalid_type():
+    error = pytest.raises(InvalidTypeError, lambda:
         Bool().validate("invalid", 0)
-    ).value.object_name == "invalid"
+    ).value
+
+    assert error.object_name == "invalid"
+    assert error.object_type == int
+
 
 
 def test_integer():
@@ -29,30 +35,50 @@ def test_integer():
     if PY2:
         Integer().validate("obj", long(1))
 
-    assert pytest.raises(InvalidTypeError, lambda:
+
+def test_integer_invalid_type():
+    error = pytest.raises(InvalidTypeError, lambda:
         Integer().validate("invalid", True)
-    ).value.object_name == "invalid"
+    ).value
+
+    assert error.object_name == "invalid"
+    assert error.object_type == bool
+
 
 
 def test_float():
     Float().validate("obj", 0.1)
 
-    assert pytest.raises(InvalidTypeError, lambda:
+
+def test_float_invalid_type():
+    error = pytest.raises(InvalidTypeError, lambda:
         Float().validate("invalid", 1)
-    ).value.object_name == "invalid"
+    ).value
+
+    assert error.object_name == "invalid"
+    assert error.object_type == int
+
 
 
 def test_string():
     String().validate("obj", "string")
 
-    assert pytest.raises(InvalidTypeError, lambda:
+
+def test_string_invalid_type():
+    error = pytest.raises(InvalidTypeError, lambda:
         String().validate("invalid", b"bytes")
-    ).value.object_name == "invalid"
+    ).value
+
+    assert error.object_name == "invalid"
+    assert error.object_type == bytes
+
 
 
 def test_choices():
     String(choices=("a", "b")).validate("obj", "b")
 
+
+def test_choices_invalid_value():
     error = pytest.raises(InvalidValueError, lambda:
         String(choices=("a", "b")).validate("invalid", "c")
     ).value

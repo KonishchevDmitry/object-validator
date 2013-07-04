@@ -47,7 +47,9 @@ def test_complex_schema():
     assert validate("items", copy.deepcopy(items), items_scheme) == items
 
     items[0][0] = 0
-    new_items = copy.deepcopy(items)
+    validating_items = copy.deepcopy(items)
     assert pytest.raises(UnknownParameterError, lambda:
-        validate("items", new_items, items_scheme)
+        validate("items", validating_items, items_scheme)
     ).value.object_name == "items[0][0]"
+
+    assert validating_items == items

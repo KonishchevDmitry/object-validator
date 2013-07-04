@@ -11,6 +11,7 @@ if _PY2:
     str = unicode
 
 
+
 class ValidationError(Exception):
     """Base class for all validation errors."""
 
