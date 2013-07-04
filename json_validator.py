@@ -76,8 +76,9 @@ class Object(object):
     def validate(self, name, obj):
         """Validates the specified object.
 
-        Returns the validated object (or a valid converted value of the
-        object) or raises an exception inherited from ValidationError.
+        Returns the validated object (possibly modified to satisfy the schema
+        or a new valid converted object - it's depends on validator) or raises
+        an exception inherited from ValidationError.
         """
 
         raise Error("Not implemented.")
@@ -133,18 +134,22 @@ class String(_BasicType):
 
 
 class List(Object):
-    def __init__(self, template, **kwargs):
+    """List validator."""
+
+    def __init__(self, scheme, **kwargs):
         super(List, self).__init__(**kwargs)
-        self.__type = template
+        self.__scheme = scheme
 
 
     def validate(self, name, obj):
+        """Validates the specified object."""
+
         if type(obj) is not list:
             raise InvalidTypeError(name, obj)
 
         for index, value in enumerate(obj):
-            obj[index] = self.__type.validate(
-                _list_value_name(name, index), value)
+            obj[index] = validate(
+                _list_value_name(name, index), value, self.__scheme)
 
         return obj
 
@@ -194,9 +199,9 @@ class AbstractDict(Object):
 class Dict(Object):
     __ignore_unknown = False
 
-    def __init__(self, template, ignore_unknown=False, **kwargs):
+    def __init__(self, scheme, ignore_unknown=False, **kwargs):
         super(Dict, self).__init__(**kwargs)
-        self.__template = template
+        self.__scheme = scheme
         if ignore_unknown:
             self.__ignore_unknown = True
 
@@ -206,27 +211,27 @@ class Dict(Object):
             raise InvalidTypeError(name, obj)
 
         if not self.__ignore_unknown:
-            unknown = set(obj) - set(self.__template)
+            unknown = set(obj) - set(self.__scheme)
             if unknown:
                 raise UnknownParameterError(_dict_key_name(name, unknown.pop()))
 
-        for key, template in self.__template.items():
+        for key, scheme in self.__scheme.items():
             key_name = _dict_key_name(name, key)
 
             if key not in obj:
-                if template.optional:
-                    # TODO: iterate over template?
+                if scheme.optional:
+                    # TODO: iterate over scheme?
                     continue
                 else:
                     raise MissingParameterError(key_name)
 
-            obj[key] = template.validate(key_name, obj[key])
+            obj[key] = validate(key_name, obj[key], scheme)
 
         return obj
 
 
-def validate(name, obj, template):
-    return template.validate(name, obj)
+def validate(name, obj, scheme):
+    return scheme.validate(name, obj)
 
 def _list_value_name(list_name, index):
     return "{0}[{1}]".format(list_name, index)
