@@ -2,8 +2,6 @@
 
 from __future__ import unicode_literals
 
-# TODO: slots?
-
 import sys
 
 _PY2 = sys.version_info < (3,)
@@ -11,23 +9,30 @@ if _PY2:
     str = unicode
 
 
+class Error(Exception):
+    """Base class for all exceptions the module throws."""
 
-class ValidationError(Exception):
+    def __init__(self, error, *args, **kwargs):
+        super(Error, self).__init__(
+            error.format(*args, **kwargs) if args or kwargs else error)
+
+
+class ValidationError(Error):
     """Base class for all validation errors."""
 
-    def __init__(self, name, error, *args, **kwargs):
-        super(ValidationError, self).__init__(
-            error.format(*args, **kwargs) if args or kwargs else error)
+    def __init__(self, name, *args, **kwargs):
+        super(ValidationError, self).__init__(*args, **kwargs)
         self.object_name = name
 
 
 class InvalidTypeError(ValidationError):
     """Invalid object type (according to schema)."""
 
-    def __init__(self, name, type):
+    def __init__(self, name, obj):
+        self.object_type = type(obj)
         super(InvalidTypeError, self).__init__(
-            name, "{0} has an invalid type: {1}.", name, type.__name__)
-        self.object_type = type
+            name, "{0} has an invalid type: {1}.",
+            name, self.object_type.__name__)
 
 
 class InvalidValueError(ValidationError):
@@ -57,28 +62,47 @@ class MissingParameterError(ValidationError):
 
 
 class Object(object):
+    """Base class for all validators."""
+
     optional = False
+    """True if the object value is optional."""
+
 
     def __init__(self, optional=False):
         if optional:
             self.optional = True
 
+
     def validate(self, name, obj):
-        raise Exception("Not implemented.")
+        """Validates the specified object.
+
+        Returns the validated object (or a valid converted value of the
+        object) or raises an exception inherited from ValidationError.
+        """
+
+        raise Error("Not implemented.")
 
 
 
 class _BasicType(Object):
+    """Base class for basic type validators."""
+
     __choices = None
+    """A list of values we must to compare the validated object with."""
+
 
     def __init__(self, choices=None, **kwargs):
         super(_BasicType, self).__init__(**kwargs)
+
         if choices is not None:
             self.__choices = choices
 
+
     def validate(self, name, obj):
+        """Validates the specified object."""
+
         if type(obj) not in self._types:
-            raise InvalidTypeError(name, type(obj))
+            raise InvalidTypeError(name, obj)
 
         if self.__choices is not None and obj not in self.__choices:
             raise InvalidValueError(name, obj)
@@ -86,20 +110,26 @@ class _BasicType(Object):
         return obj
 
 
+
 class Bool(_BasicType):
+    """Boolean type validator."""
     _types = (bool,)
 
+
 class Float(_BasicType):
+    """Float type validator."""
     _types = (float,)
 
+
 class Integer(_BasicType):
-    if _PY2:
-        _types = (int, long)
-    else:
-        _types = (int,)
+    """Integer type validator."""
+    _types = (int, long) if _PY2 else (int,)
+
 
 class String(_BasicType):
+    """String type validator."""
     _types = (str,)
+
 
 
 class List(Object):
@@ -110,7 +140,7 @@ class List(Object):
 
     def validate(self, name, obj):
         if type(obj) is not list:
-            raise InvalidTypeError(name, type(obj))
+            raise InvalidTypeError(name, obj)
 
         for index, value in enumerate(obj):
             obj[index] = self.__type.validate(
@@ -136,7 +166,7 @@ class AbstractDict(Object):
 
     def validate(self, name, obj):
         if type(obj) is not dict:
-            raise InvalidTypeError(name, type(obj))
+            raise InvalidTypeError(name, obj)
 
         for key, value in obj.items():
             if self.__key_type is None:
@@ -173,7 +203,7 @@ class Dict(Object):
 
     def validate(self, name, obj):
         if type(obj) is not dict:
-            raise InvalidTypeError(name, type(obj))
+            raise InvalidTypeError(name, obj)
 
         if not self.__ignore_unknown:
             unknown = set(obj) - set(self.__template)
