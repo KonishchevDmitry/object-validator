@@ -39,7 +39,7 @@ class ValidationError(Error):
 class InvalidTypeError(ValidationError):
     """Invalid object type (according to schema)."""
 
-    def __init__(self, name, obj):
+    def __init__(self, obj, name=""):
         super(InvalidTypeError, self).__init__(
             name, "Invalid object type.")
         self.object_type = type(obj)
@@ -52,7 +52,7 @@ class InvalidTypeError(ValidationError):
 class InvalidValueError(ValidationError):
     """Invalid object value (according to schema)."""
 
-    def __init__(self, name, value):
+    def __init__(self, value, name=""):
         super(InvalidValueError, self).__init__(
             name, "Invalid object value.")
         self.object_value = value
@@ -127,10 +127,10 @@ class _BasicType(Object):
         """Validates the specified object."""
 
         if type(obj) not in self._types:
-            raise InvalidTypeError("", obj)
+            raise InvalidTypeError(obj)
 
         if self.__choices is not None and obj not in self.__choices:
-            raise InvalidValueError("", obj)
+            raise InvalidValueError(obj)
 
         return obj
 
@@ -169,7 +169,7 @@ class List(Object):
         """Validates the specified object."""
 
         if type(obj) is not list:
-            raise InvalidTypeError("", obj)
+            raise InvalidTypeError(obj)
 
         for index, value in enumerate(obj):
             try:
@@ -198,7 +198,7 @@ class AbstractDict(Object):
 
     def validate(self, obj):
         if type(obj) is not dict:
-            raise InvalidTypeError("", obj)
+            raise InvalidTypeError(obj)
 
         for key, value in obj.items():
             try:
@@ -225,6 +225,7 @@ class AbstractDict(Object):
         return obj
 
 
+
 class Dict(Object):
     __ignore_unknown = False
 
@@ -237,7 +238,7 @@ class Dict(Object):
 
     def validate(self, obj):
         if type(obj) is not dict:
-            raise InvalidTypeError("", obj)
+            raise InvalidTypeError(obj)
 
         if not self.__ignore_unknown:
             unknown = set(obj) - set(self.__scheme)
