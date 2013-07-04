@@ -1,7 +1,8 @@
+"""Validates a JSON against a schema."""
+
 from __future__ import unicode_literals
 
 # TODO: slots?
-# TODO: check return value
 
 import sys
 
@@ -9,47 +10,48 @@ _PY2 = sys.version_info < (3,)
 if _PY2:
     str = unicode
 
-class Error(Exception):
-    """The base class for all exceptions that the module raises."""
 
-    def __init__(self, error, *args, **kwargs):
-        super(Error, self).__init__(error.format(*args, **kwargs) if args or kwargs else error)
+class ValidationError(Exception):
+    """Base class for all validation errors."""
 
-
-class ValidationError(Error):
-    """Error during validation."""
-
-    def __init__(self, name, *args, **kwargs):
-        super(ValidationError, self).__init__(*args, **kwargs)
+    def __init__(self, name, error, *args, **kwargs):
+        super(ValidationError, self).__init__(
+            error.format(*args, **kwargs) if args or kwargs else error)
+        self.object_name = name
 
 
-class InvalidType(ValidationError):
+class InvalidTypeError(ValidationError):
+    """Invalid object type (according to schema)."""
+
     def __init__(self, name, type):
-        super(InvalidType, self).__init__(
-            name, "{0} has an invalid type ({1}).", name, type.__name__)
-        self.object_name = name
+        super(InvalidTypeError, self).__init__(
+            name, "{0} has an invalid type: {1}.", name, type.__name__)
+        self.object_type = type
 
 
-class InvalidValue(ValidationError):
+class InvalidValueError(ValidationError):
+    """Invalid object value (according to schema)."""
+
     def __init__(self, name, value):
-        super(InvalidValue, self).__init__(
-            name, "{0} has an invalid value: {1}.", name, value)
-        self.object_name = name
+        super(InvalidValueError, self).__init__(
+            name, "{0} has an invalid value: {1!r}.", name, value)
         self.object_value = value
 
 
-class UnknownParameter(ValidationError):
+class UnknownParameterError(ValidationError):
+    """Unknown object's key (according to schema)."""
+
     def __init__(self, name):
-        super(UnknownParameter, self).__init__(
+        super(UnknownParameterError, self).__init__(
             name, "Unknown parameter: {0}.", name)
-        self.object_name = name
 
 
-class MissingParameter(ValidationError):
+class MissingParameterError(ValidationError):
+    """A required object's key is missing. (according to schema)"""
+
     def __init__(self, name):
-        super(MissingParameter, self).__init__(
+        super(MissingParameterError, self).__init__(
             name, "{0} is missing.", name)
-        self.object_name = name
 
 
 
@@ -75,10 +77,10 @@ class _BasicType(Object):
 
     def validate(self, name, obj):
         if type(obj) not in self._types:
-            raise InvalidType(name, type(obj))
+            raise InvalidTypeError(name, type(obj))
 
         if self.__choices is not None and obj not in self.__choices:
-            raise InvalidValue(name, obj)
+            raise InvalidValueError(name, obj)
 
         return obj
 
@@ -107,7 +109,7 @@ class List(Object):
 
     def validate(self, name, obj):
         if type(obj) is not list:
-            raise InvalidType(name, type(obj))
+            raise InvalidTypeError(name, type(obj))
 
         for index, value in enumerate(obj):
             obj[index] = self.__type.validate(
@@ -133,7 +135,7 @@ class AbstractDict(Object):
 
     def validate(self, name, obj):
         if type(obj) is not dict:
-            raise InvalidType(name, type(obj))
+            raise InvalidTypeError(name, type(obj))
 
         for key, value in obj.items():
             if self.__key_type is None:
@@ -170,12 +172,12 @@ class Dict(Object):
 
     def validate(self, name, obj):
         if type(obj) is not dict:
-            raise InvalidType(name, type(obj))
+            raise InvalidTypeError(name, type(obj))
 
         if not self.__ignore_unknown:
             unknown = set(obj) - set(self.__template)
             if unknown:
-                raise UnknownParameter(_dict_key_name(name, unknown.pop()))
+                raise UnknownParameterError(_dict_key_name(name, unknown.pop()))
 
         for key, template in self.__template.items():
             key_name = _dict_key_name(name, key)
@@ -185,7 +187,7 @@ class Dict(Object):
                     # TODO: iterate over template?
                     continue
                 else:
-                    raise MissingParameter(key_name)
+                    raise MissingParameterError(key_name)
 
             obj[key] = template.validate(key_name, obj[key])
 

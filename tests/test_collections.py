@@ -7,7 +7,7 @@ import sys
 import pytest
 
 from json_validator import Bool, Integer, Float, String, List, AbstractDict, Dict
-from json_validator import InvalidType, MissingParameter, UnknownParameter
+from json_validator import InvalidTypeError, MissingParameterError, UnknownParameterError
 
 PY2 = sys.version_info < (3,)
 if PY2:
@@ -18,11 +18,11 @@ def test_list():
     List(Bool()).validate("obj", [])
     List(Bool()).validate("obj", [True, False])
 
-    assert pytest.raises(InvalidType, lambda:
+    assert pytest.raises(InvalidTypeError, lambda:
         List(Bool()).validate("list", tuple())
     ).value.object_name == "list"
 
-    assert pytest.raises(InvalidType, lambda:
+    assert pytest.raises(InvalidTypeError, lambda:
         List(Bool()).validate("list", [False, 10, True])
     ).value.object_name == "list[1]"
 
@@ -40,14 +40,14 @@ def test_abstract_dict():
         "two": 2.0,
     })
 
-    assert pytest.raises(InvalidType, lambda:
+    assert pytest.raises(InvalidTypeError, lambda:
         AbstractDict(key_type=String()).validate("dict", {
             True: "boolean",
             "string": "a",
         })
     ).value.object_name == "dict[True]"
 
-    assert pytest.raises(InvalidType, lambda:
+    assert pytest.raises(InvalidTypeError, lambda:
         AbstractDict(value_type=String()).validate("dict", {
             False: 0,
             "string": "a",
@@ -69,18 +69,18 @@ def test_dict():
         "integer": 10,
     })
 
-    assert pytest.raises(InvalidType, lambda:
+    assert pytest.raises(InvalidTypeError, lambda:
         Dict({}).validate("dict", object())
     ).value.object_name == "dict"
 
-    assert pytest.raises(UnknownParameter, lambda:
+    assert pytest.raises(UnknownParameterError, lambda:
         Dict({1: Bool()}).validate("dict", {
             1: True,
             False: "value",
         })
     ).value.object_name == "dict[False]"
 
-    assert pytest.raises(MissingParameter, lambda:
+    assert pytest.raises(MissingParameterError, lambda:
         Dict({1: Bool(), 2: String()}).validate("dict", {
             2: "value",
         })

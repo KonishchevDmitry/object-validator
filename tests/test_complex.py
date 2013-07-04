@@ -8,7 +8,7 @@ import sys
 import pytest
 
 from json_validator import Bool, Integer, Float, String, List, AbstractDict, Dict, validate
-from json_validator import UnknownParameter
+from json_validator import UnknownParameterError
 
 PY2 = sys.version_info < (3,)
 if PY2:
@@ -48,6 +48,6 @@ def test_complex_schema():
 
     items[0][0] = 0
     new_items = copy.deepcopy(items)
-    assert pytest.raises(UnknownParameter, lambda:
+    assert pytest.raises(UnknownParameterError, lambda:
         validate("items", new_items, items_scheme)
     ).value.object_name == "items[0][0]"
