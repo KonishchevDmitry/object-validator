@@ -6,7 +6,8 @@ import sys
 
 import pytest
 
-from json_validator import Bool, Integer, Float, String, InvalidType
+from json_validator import Bool, Integer, Float, String
+from json_validator import InvalidType, InvalidValue
 
 PY2 = sys.version_info < (3,)
 if PY2:
@@ -47,3 +48,14 @@ def test_string():
     assert pytest.raises(InvalidType, lambda:
         String().validate("invalid", b"bytes")
     ).value.object_name == "invalid"
+
+
+def test_choices():
+    String(choices=("a", "b")).validate("obj", "b")
+
+    error = pytest.raises(InvalidValue, lambda:
+        String(choices=("a", "b")).validate("invalid", "c")
+    ).value
+
+    assert error.object_name == "invalid"
+    assert error.object_value == "c"

@@ -1,6 +1,7 @@
 from __future__ import unicode_literals
 
 # TODO: slots?
+# TODO: check return value
 
 import sys
 
@@ -27,6 +28,14 @@ class InvalidType(ValidationError):
         super(InvalidType, self).__init__(
             name, "{0} has an invalid type ({1}).", name, type.__name__)
         self.object_name = name
+
+
+class InvalidValue(ValidationError):
+    def __init__(self, name, value):
+        super(InvalidValue, self).__init__(
+            name, "{0} has an invalid value: {1}.", name, value)
+        self.object_name = name
+        self.object_value = value
 
 
 class UnknownParameter(ValidationError):
@@ -57,9 +66,19 @@ class Object(object):
 
 
 class _BasicType(Object):
+    __choices = None
+
+    def __init__(self, choices=None, **kwargs):
+        super(_BasicType, self).__init__(**kwargs)
+        if choices is not None:
+            self.__choices = choices
+
     def validate(self, name, obj):
         if type(obj) not in self._types:
             raise InvalidType(name, type(obj))
+
+        if self.__choices is not None and obj not in self.__choices:
+            raise InvalidValue(name, obj)
 
         return obj
 
