@@ -193,7 +193,7 @@ class Dict(Object):
 
 
 def validate(name, obj, template):
-    template.validate(name, obj)
+    return template.validate(name, obj)
 
 def _list_value_name(list_name, index):
     return "{0}[{1}]".format(list_name, index)
