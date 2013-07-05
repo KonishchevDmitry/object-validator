@@ -130,11 +130,13 @@ def test_dict_scheme_with_schema():
         False: "string",
         1: True,
         "integer": 10,
+        4.4: 44.4,
     }, DictScheme({
         False: String(),
         1: Bool(),
         "integer": Integer(),
         3.3: Float(optional=True),
+        4.4: Float(optional=True),
     }))
 
 

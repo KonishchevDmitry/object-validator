@@ -259,16 +259,24 @@ class Dict(Object):
 
 
 class DictScheme(Object):
+    """Validator for a dictionary against a dictionary key scheme."""
+
     __ignore_unknown = False
+    """Ignore unknown keys."""
+
 
     def __init__(self, scheme, ignore_unknown=False, **kwargs):
         super(DictScheme, self).__init__(**kwargs)
+
         self.__scheme = scheme
+
         if ignore_unknown:
             self.__ignore_unknown = True
 
 
     def validate(self, obj):
+        """Validates the specified object."""
+
         if type(obj) is not dict:
             raise InvalidTypeError(obj)
 
@@ -278,21 +286,22 @@ class DictScheme(Object):
                 raise UnknownParameterError(_dict_key_name(unknown.pop()))
 
         for key, scheme in self.__scheme.items():
-            if key not in obj:
-                if scheme.optional:
-                    # TODO: iterate over scheme?
-                    continue
-                else:
+            if key in obj:
+                try:
+                    obj[key] = validate_scheme(obj[key], scheme)
+                except ValidationError as e:
+                    e.prefix_object_name(_dict_key_name(key))
+                    raise
+            else:
+                if _get_optional(scheme) is None:
                     raise MissingParameterError(_dict_key_name(key))
-
-            try:
-                obj[key] = validate_scheme(obj[key], scheme)
-            except ValidationError as e:
-                e.prefix_object_name(_dict_key_name(key))
-                raise
 
         return obj
 
+
+
+def _get_optional(scheme):
+    return scheme if scheme.optional else None
 
 def validate_scheme(obj, scheme):
     return scheme.validate(obj)
