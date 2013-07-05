@@ -18,10 +18,10 @@ dist:
 	mv dist/$(NAME)-*.tar.gz .
 
 srpm: dist
-	rpmbuild -bs --define "_sourcedir $(CURDIR)" $(NAME).spec
+	rpmbuild -bs --define "_sourcedir $(CURDIR)" $(RPM_NAME).spec
 
 rpm: dist
-	rpmbuild -ba --define "_sourcedir $(CURDIR)" $(NAME).spec
+	rpmbuild -ba --define "_sourcedir $(CURDIR)" $(RPM_NAME).spec
 
 pypi: clean
 	$(PYTHON) setup.py sdist upload
