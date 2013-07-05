@@ -198,7 +198,7 @@ class List(Object):
         if self.__scheme is not None:
             for index, value in enumerate(obj):
                 try:
-                    obj[index] = validate_scheme(value, self.__scheme)
+                    obj[index] = validate_object(value, self.__scheme)
                 except ValidationError as e:
                     e.prefix_object_name("[{0}]".format(index))
                     raise
@@ -236,10 +236,10 @@ class Dict(Object):
         for key, value in tuple(obj.items()):
             try:
                 valid_key = key if self.__key_scheme is None \
-                    else validate_scheme(key, self.__key_scheme)
+                    else validate_object(key, self.__key_scheme)
 
                 valid_value = value if self.__value_scheme is None \
-                    else validate_scheme(value, self.__value_scheme)
+                    else validate_object(value, self.__value_scheme)
             except ValidationError as e:
                 e.prefix_object_name(_dict_key_name(key))
                 raise
@@ -288,7 +288,7 @@ class DictScheme(Object):
         for key, scheme in self.__scheme.items():
             if key in obj:
                 try:
-                    obj[key] = validate_scheme(obj[key], scheme)
+                    obj[key] = validate_object(obj[key], scheme)
                 except ValidationError as e:
                     e.prefix_object_name(_dict_key_name(key))
                     raise
@@ -300,24 +300,43 @@ class DictScheme(Object):
 
 
 
-def _get_optional(scheme):
-    return scheme if scheme.optional else None
+def validate(name, obj, scheme):
+    """Validates the specified object."""
 
-def validate_scheme(obj, scheme):
-    return scheme.validate(obj)
-
-def validate_object(name, obj, scheme):
     try:
-        return validate_scheme(obj, scheme)
+        return validate_object(obj, scheme)
     except ValidationError as e:
         e.prefix_object_name(name)
         raise
 
+
+def validate_object(obj, scheme):
+    """Validates the specified object.
+
+    Note: this function is for internal usage only (from validators). It's
+    needed for possible support for example a list of schemes as a scheme in
+    the future.
+    """
+
+    return scheme.validate(obj)
+
+
+def _get_optional(scheme):
+    """Returns the scheme if it's optional or None otherwise.
+
+    Note: this function is for internal usage only (from validators). It's
+    needed for possible support for example a list of schemes as a scheme in
+    the future.
+    """
+
+    return scheme if scheme.optional else None
+
+
 def _dict_key_name(key):
+    """Formats a key to object name suffix."""
+
     return "[{0}]".format(_repr(key))
 
-if _PY2:
-    def _repr(value):
-        return repr(value)[1:] if type(value) is str else repr(value)
-else:
-    _repr = repr
+
+_repr = ( lambda obj: repr(obj)[1:] if type(obj) is str else repr(obj) ) if _PY2 else repr
+"""More friendly version of repr()."""

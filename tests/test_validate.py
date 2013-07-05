@@ -7,7 +7,7 @@ import sys
 
 import pytest
 
-from json_validator import Bool, Integer, Float, String, List, Dict, DictScheme, validate_object
+from json_validator import Bool, Integer, Float, String, List, Dict, DictScheme, validate
 from json_validator import InvalidTypeError, InvalidValueError, UnknownParameterError, MissingParameterError
 
 PY2 = sys.version_info < (3,)
@@ -96,7 +96,7 @@ def _validate(name, obj, scheme):
     obj_copy = copy.deepcopy(obj)
 
     try:
-        validated = validate_object(name, obj, scheme)
+        validated = validate(name, obj, scheme)
     finally:
         assert obj == obj_copy
 
