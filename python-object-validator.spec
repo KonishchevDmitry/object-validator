@@ -25,8 +25,8 @@ BuildRequires: pytest >= 2.2.4
 %description
 This module is intended for validation of Python objects. For this time it's
 supposed to be used for validation of configuration files represented as JSON
-or JSON-PRC requests, but it can be easily extended to validate arbitrary
-Python objects or to support custom validation rules.
+or for validation of JSON-PRC requests, but it can be easily extended to
+validate arbitrary Python objects or to support custom validation rules.
 
 
 %prep
