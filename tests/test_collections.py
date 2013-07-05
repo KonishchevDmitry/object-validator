@@ -8,7 +8,7 @@ import sys
 import pytest
 
 from json_validator import Object, Bool, Integer, Float, String, List, Dict, DictScheme
-from json_validator import InvalidTypeError, MissingParameterError, UnknownParameterError
+from json_validator import InvalidTypeError, MissingParameterError, UnknownParameterError, ParameterAlreadyExistsError
 
 PY2 = sys.version_info < (3,)
 if PY2:
@@ -18,6 +18,7 @@ if PY2:
 class ToInt(Object):
     def validate(self, obj):
         return int(obj)
+
 
 
 def test_list_empty():
@@ -86,24 +87,33 @@ def test_dict_key_value_modification():
         { "1": "10", "2": "20" }, Dict(ToInt(), ToInt()), { 1: 10, 2: 20 })
 
 
-def test_dict_invalid_key_type():
+def test_dict_invalid_key_modification():
+    error = pytest.raises(ParameterAlreadyExistsError, lambda:
+        _validate_modification(
+            { 1: "10", "1": "100" }, Dict(ToInt(), None), { 1: 10 })
+    ).value
+
+    assert error.object_name == "[1]"
+
+
+def test_dict_invalid_key_scheme():
     error = pytest.raises(InvalidTypeError, lambda:
         _validate({
             True: "boolean",
             "string": "a",
-        }, Dict(key_type=String()))
+        }, Dict(key_scheme=String()))
     ).value
 
     assert error.object_name == "[True]"
     assert error.object_type == bool
 
 
-def test_dict_invalid_value_type():
+def test_dict_invalid_value_scheme():
     error = pytest.raises(InvalidTypeError, lambda:
         _validate({
             False: 0,
             "string": "a",
-        }, Dict(value_type=String()))
+        }, Dict(value_scheme=String()))
     ).value
 
     assert error.object_name == "[False]"

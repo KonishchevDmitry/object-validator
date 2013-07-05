@@ -24,6 +24,11 @@ class ValidationError(Error):
         super(ValidationError, self).__init__(*args, **kwargs)
         self.object_name = name
 
+    def get_message(self):
+        """Returns the error message."""
+
+        return getattr(super(ValidationError, self), "__unicode__" if _PY2 else "__str__")()
+
     def prefix_object_name(self, prefix):
         """Adds a prefix to the object name."""
 
@@ -82,6 +87,20 @@ class MissingParameterError(ValidationError):
 
     def get_message(self):
         return "{0} is missing.".format(self.object_name)
+
+
+class ParameterAlreadyExistsError(ValidationError):
+    """
+    A parameter name has been converted to a value that already exists in the
+    object.
+    """
+
+    def __init__(self, name=""):
+        super(ParameterAlreadyExistsError, self).__init__(
+            name, "Parameter already exists.")
+
+    def get_message(self):
+        return "{0} already exists.".format(self.object_name)
 
 
 
@@ -198,41 +217,42 @@ class Dict(Object):
     """Value scheme."""
 
 
-    def __init__(self, key_type=None, value_type=None, **kwargs):
+    def __init__(self, key_scheme=None, value_scheme=None, **kwargs):
         super(Dict, self).__init__(**kwargs)
 
-        if key_type is not None:
-            self.__key_scheme = key_type
+        if key_scheme is not None:
+            self.__key_scheme = key_scheme
 
-        if value_type is not None:
-            self.__value_scheme = value_type
+        if value_scheme is not None:
+            self.__value_scheme = value_scheme
 
 
     def validate(self, obj):
+        """Validates the specified object."""
+
         if type(obj) is not dict:
             raise InvalidTypeError(obj)
 
-        for key, value in obj.items():
+        for key, value in tuple(obj.items()):
             try:
-                if self.__key_scheme is None:
-                    valid_key = key
-                else:
-                    # TODO: name
-                    valid_key = validate_scheme(key, self.__key_scheme)
+                valid_key = key if self.__key_scheme is None \
+                    else validate_scheme(key, self.__key_scheme)
 
-                if self.__value_scheme is None:
-                    valid_value = value
-                else:
-                    valid_value = validate_scheme(value, self.__value_scheme)
-
-                if valid_key is not key:
-                    del obj[key]
-                    obj[valid_key] = valid_value
-                elif valid_value is not value:
-                    obj[valid_key] = valid_value
+                valid_value = value if self.__value_scheme is None \
+                    else validate_scheme(value, self.__value_scheme)
             except ValidationError as e:
                 e.prefix_object_name(_dict_key_name(key))
                 raise
+
+            if valid_key is not key:
+                del obj[key]
+
+                if valid_key in obj:
+                    raise ParameterAlreadyExistsError(_dict_key_name(valid_key))
+
+                obj[valid_key] = valid_value
+            elif valid_value is not value:
+                obj[valid_key] = valid_value
 
         return obj
 
@@ -283,9 +303,6 @@ def validate_object(name, obj, scheme):
     except ValidationError as e:
         e.prefix_object_name(name)
         raise
-
-def _list_value_name(list_name, index):
-    return "{0}[{1}]".format(list_name, index)
 
 def _dict_key_name(key):
     return "[{0}]".format(_repr(key))
