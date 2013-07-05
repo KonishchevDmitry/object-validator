@@ -1,4 +1,4 @@
-"""Validates a JSON against a schema."""
+"""Validates an object against a schema."""
 
 from __future__ import unicode_literals
 

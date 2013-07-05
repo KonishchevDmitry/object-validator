@@ -6,8 +6,8 @@ import sys
 
 import pytest
 
-from json_validator import Bool, Integer, Float, String
-from json_validator import InvalidTypeError, InvalidValueError
+from object_validator import Bool, Integer, Float, String
+from object_validator import InvalidTypeError, InvalidValueError
 
 PY2 = sys.version_info < (3,)
 if PY2:
