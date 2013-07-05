@@ -1,0 +1,6 @@
+include ChangeLog
+include INSTALL
+include Makefile
+include python-object-validator.spec
+include README
+include tests/*.py
