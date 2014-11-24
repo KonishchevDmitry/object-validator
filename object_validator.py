@@ -110,11 +110,9 @@ class Object(object):
     optional = False
     """True if the object value is optional."""
 
-
     def __init__(self, optional=False):
         if optional:
             self.optional = True
-
 
     def validate(self, obj):
         """Validates the specified object.
@@ -134,13 +132,11 @@ class _BasicType(Object):
     __choices = None
     """A list of values we must to compare the validated object with."""
 
-
     def __init__(self, choices=None, **kwargs):
         super(_BasicType, self).__init__(**kwargs)
 
         if choices is not None:
             self.__choices = choices
-
 
     def validate(self, obj):
         """Validates the specified object."""
@@ -167,7 +163,36 @@ class Float(_BasicType):
 
 class Integer(_BasicType):
     """Integer type validator."""
+
     _types = (int, long) if _PY2 else (int,)
+
+    __min = None
+    """Minimum value."""
+
+    __max = None
+    """Maximum value."""
+
+    def __init__(self, min=None, max=None, **kwargs):
+        if min is not None:
+            self.__min = min
+
+        if max is not None:
+            self.__max = max
+
+        super(Integer, self).__init__(**kwargs)
+
+    def validate(self, obj):
+        """Validates the specified object."""
+
+        obj = super(Integer, self).validate(obj)
+
+        if (
+            self.__min is not None and obj < self.__min or
+            self.__max is not None and obj > self.__max
+        ):
+            raise InvalidValueError(obj)
+
+        return obj
 
 
 class String(_BasicType):
@@ -187,7 +212,6 @@ class List(Object):
 
         if scheme is not None:
             self.__scheme = scheme
-
 
     def validate(self, obj):
         """Validates the specified object."""
@@ -225,7 +249,6 @@ class Dict(Object):
 
         if value_scheme is not None:
             self.__value_scheme = value_scheme
-
 
     def validate(self, obj):
         """Validates the specified object."""
@@ -272,7 +295,6 @@ class DictScheme(Object):
 
         if ignore_unknown:
             self.__ignore_unknown = True
-
 
     def validate(self, obj):
         """Validates the specified object."""

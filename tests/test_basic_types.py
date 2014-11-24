@@ -46,6 +46,20 @@ def test_integer_invalid_type():
     assert error.object_type == bool
 
 
+def test_integer_min_max_valid():
+    _validate(5, Integer(min=5, max=5))
+
+
+def test_integer_min_invalid():
+    with pytest.raises(InvalidValueError):
+        _validate(5, Integer(min=6))
+
+
+def test_integer_max_invalid():
+    with pytest.raises(InvalidValueError):
+        _validate(5, Integer(max=4))
+
+
 
 def test_float():
     _validate(0.1, Float())
