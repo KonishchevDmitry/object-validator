@@ -5,7 +5,7 @@
 %global with_check 1
 
 Name:    python-%project_name
-Version: 0.1
+Version: 0.1.1
 Release: 1%{?dist}
 Summary: Python object validation module
 
@@ -59,5 +59,8 @@ make PYTHON=%__python INSTALL_FLAGS="-O1 --root '%buildroot'" install
 
 
 %changelog
+* Mon Nov 24 2014 Dmitry Konishchev <konishchev@gmail.com> - 0.1.1-1
+- New version.
+
 * Fri Jul 05 2013 Dmitry Konishchev <konishchev@gmail.com> - 0.1-1
 - New package.
