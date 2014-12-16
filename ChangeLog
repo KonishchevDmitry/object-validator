@@ -1,3 +1,8 @@
+Version 0.1.2
+-------------
+ * delete_unknown parameter for DictScheme validator
+
+
 Version 0.1.1
 -------------
  * min and max options for Integer validator

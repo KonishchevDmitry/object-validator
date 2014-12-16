@@ -21,7 +21,7 @@ if __name__ == "__main__":
     with open("README") as readme:
         setup(
             name = "object-validator",
-            version = "0.1.1",
+            version = "0.1.2",
 
             description = readme.readline().strip(),
             long_description = readme.read().strip() or None,

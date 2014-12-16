@@ -287,8 +287,11 @@ class DictScheme(Object):
     __ignore_unknown = False
     """Ignore unknown keys."""
 
+    __delete_unknown = False
+    """Delete unknown keys."""
 
-    def __init__(self, scheme, ignore_unknown=False, **kwargs):
+
+    def __init__(self, scheme, ignore_unknown=False, delete_unknown=False, **kwargs):
         super(DictScheme, self).__init__(**kwargs)
 
         self.__scheme = scheme
@@ -296,13 +299,19 @@ class DictScheme(Object):
         if ignore_unknown:
             self.__ignore_unknown = True
 
+        if delete_unknown:
+            self.__delete_unknown = True
+
     def validate(self, obj):
         """Validates the specified object."""
 
         if type(obj) is not dict:
             raise InvalidTypeError(obj)
 
-        if not self.__ignore_unknown:
+        if self.__delete_unknown:
+            for key in set(obj) - set(self.__scheme):
+                del obj[key]
+        elif not self.__ignore_unknown:
             unknown = set(obj) - set(self.__scheme)
             if unknown:
                 raise UnknownParameterError(_dict_key_name(unknown.pop()))

@@ -140,6 +140,20 @@ def test_dict_scheme_with_schema():
     }))
 
 
+def test_dict_scheme_with_ignore_unknown():
+    _validate({
+        "known_key": 10,
+        "unknown_key": 10,
+    }, DictScheme({"known_key": Integer()}, ignore_unknown=True))
+
+
+def test_dict_scheme_with_delete_unknown():
+    _validate_modification(
+        {"known_key": 10, "unknown_key": 10,},
+        DictScheme({"known_key": Integer()}, delete_unknown=True),
+        {"known_key": 10})
+
+
 def test_dict_scheme_modification():
     _validate_modification(
         { "1": "10", "2": "20", "3": "30" },
