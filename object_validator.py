@@ -197,7 +197,36 @@ class Integer(_BasicType):
 
 class String(_BasicType):
     """String type validator."""
+
     _types = (str,)
+
+    __min_length = None
+    """Minimum length."""
+
+    __max_length = None
+    """Maximum length."""
+
+    def __init__(self, min_length=None, max_length=None, **kwargs):
+        if min_length is not None:
+            self.__min_length = min_length
+
+        if max_length is not None:
+            self.__max_length = max_length
+
+        super(String, self).__init__(**kwargs)
+
+    def validate(self, obj):
+        """Validates the specified object."""
+
+        obj = super(String, self).validate(obj)
+
+        if (
+            self.__min_length is not None and len(obj) < self.__min_length or
+            self.__max_length is not None and len(obj) > self.__max_length
+        ):
+            raise InvalidValueError(obj)
+
+        return obj
 
 
 

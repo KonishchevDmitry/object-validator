@@ -88,6 +88,20 @@ def test_string_invalid_type():
     assert error.object_type == bytes
 
 
+def test_string_min_max_length_valid():
+    _validate("12345", String(min_length=5, max_length=5))
+
+
+def test_string_min_length_invalid():
+    with pytest.raises(InvalidValueError):
+        _validate("12345", String(min_length=6))
+
+
+def test_string_max_length_invalid():
+    with pytest.raises(InvalidValueError):
+        _validate("12345", String(max_length=4))
+
+
 
 def test_choices():
     _validate("b", String(choices=("a", "b")))
