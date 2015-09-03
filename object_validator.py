@@ -2,6 +2,7 @@
 
 from __future__ import unicode_literals
 
+import re
 import sys
 
 _PY2 = sys.version_info < (3,)
@@ -206,12 +207,20 @@ class String(_BasicType):
     __max_length = None
     """Maximum length."""
 
-    def __init__(self, min_length=None, max_length=None, **kwargs):
+    __regex = None
+    """Regular expression the string must match to."""
+
+    def __init__(self, min_length=None, max_length=None, regex=None, **kwargs):
         if min_length is not None:
             self.__min_length = min_length
 
         if max_length is not None:
             self.__max_length = max_length
+
+        if regex is not None:
+            if isinstance(regex, (str, bytes)):
+                regex = re.compile(regex)
+            self.__regex = regex
 
         super(String, self).__init__(**kwargs)
 
@@ -222,7 +231,8 @@ class String(_BasicType):
 
         if (
             self.__min_length is not None and len(obj) < self.__min_length or
-            self.__max_length is not None and len(obj) > self.__max_length
+            self.__max_length is not None and len(obj) > self.__max_length or
+            self.__regex is not None and self.__regex.search(obj) is None
         ):
             raise InvalidValueError(obj)
 

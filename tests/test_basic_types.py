@@ -102,6 +102,15 @@ def test_string_max_length_invalid():
         _validate("12345", String(max_length=4))
 
 
+def test_string_regex_valid():
+    _validate("12345", String(regex=r"^\d{5}$"))
+
+
+def test_string_regex_invalid():
+    with pytest.raises(InvalidValueError):
+        _validate("12345", String(regex=r"^\d{4}$"))
+
+
 
 def test_choices():
     _validate("b", String(choices=("a", "b")))
