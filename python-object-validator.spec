@@ -19,7 +19,7 @@
 %bcond_without tests
 
 Name:    python-%project_name
-Version: 0.1.1
+Version: 0.1.6
 Release: 1%{?dist}
 Summary: Python object validation module
 
