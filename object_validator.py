@@ -68,6 +68,19 @@ class InvalidValueError(ValidationError):
             self.object_name, _repr(self.object_value))
 
 
+class InvalidListLength(ValidationError):
+    """Invalid list length (according to schema)."""
+
+    def __init__(self, value, name=""):
+        super(InvalidListLength, self).__init__(
+            name, "Invalid list length.")
+        self.object_value = value
+
+    def get_message(self):
+        return "{0} has an invalid length: {1}.".format(
+            self.object_name, len(self.object_value))
+
+
 class UnknownParameterError(ValidationError):
     """Unknown object's key (according to schema)."""
 
@@ -246,17 +259,35 @@ class List(Object):
     __scheme = None
     """Value scheme."""
 
-    def __init__(self, scheme=None, **kwargs):
+    __min_length = None
+    """Minimum length."""
+
+    __max_length = None
+    """Maximum length."""
+
+    def __init__(self, scheme=None, min_length=None, max_length=None, **kwargs):
         super(List, self).__init__(**kwargs)
 
         if scheme is not None:
             self.__scheme = scheme
+
+        if min_length is not None:
+            self.__min_length = min_length
+
+        if max_length is not None:
+            self.__max_length = max_length
 
     def validate(self, obj):
         """Validates the specified object."""
 
         if type(obj) is not list:
             raise InvalidTypeError(obj)
+
+        if (
+            self.__min_length is not None and len(obj) < self.__min_length or
+            self.__max_length is not None and len(obj) > self.__max_length
+        ):
+            raise InvalidListLength(obj)
 
         if self.__scheme is not None:
             for index, value in enumerate(obj):

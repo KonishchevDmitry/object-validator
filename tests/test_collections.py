@@ -8,7 +8,8 @@ import sys
 import pytest
 
 from object_validator import Object, Bool, Integer, Float, String, List, Dict, DictScheme
-from object_validator import InvalidTypeError, MissingParameterError, UnknownParameterError, ParameterAlreadyExistsError
+from object_validator import InvalidTypeError, InvalidListLength, MissingParameterError, UnknownParameterError, \
+    ParameterAlreadyExistsError
 
 PY2 = sys.version_info < (3,)
 if PY2:
@@ -53,6 +54,20 @@ def test_list_invalid_element_type():
 
     assert error.object_name == "[1]"
     assert error.object_type == int
+
+
+def test_list_min_max_length_valid():
+    _validate([1, 2, 3], List(min_length=1, max_length=3))
+
+
+def test_list_min_length_invalid():
+    with pytest.raises(InvalidListLength):
+        _validate([1, 2, 3], List(min_length=4, max_length=3))
+
+
+def test_list_max_length_invalid():
+    with pytest.raises(InvalidListLength):
+        _validate([1, 2, 3], List(min_length=1, max_length=2))
 
 
 
