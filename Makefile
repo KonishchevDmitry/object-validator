@@ -1,8 +1,9 @@
-.PHONY: build check install dist srpm rpm pypi clean
+.PHONY: build check install dist sources srpm rpm pypi clean
 
-NAME = object-validator
+NAME     = object-validator
 RPM_NAME := python-$(NAME)
-PYTHON := python
+PYTHON   := python
+VERSION  := 0.1.6
 
 build:
 	$(PYTHON) setup.py build
@@ -16,6 +17,10 @@ install:
 dist:
 	$(PYTHON) setup.py sdist
 	mv dist/$(NAME)-*.tar.gz .
+
+sources:
+	@git archive --format=tar --prefix="$(NAME)-$(VERSION)/" \
+		$(shell git rev-parse --verify HEAD) | gzip > $(NAME)-$(VERSION).tar.gz
 
 srpm: dist
 	rpmbuild -bs --define "_sourcedir $(CURDIR)" $(RPM_NAME).spec
