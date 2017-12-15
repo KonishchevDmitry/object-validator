@@ -74,6 +74,31 @@ def test_float_invalid_type():
     assert error.object_type == int
 
 
+def test_float_min_max_valid():
+    _validate(7.0, Float(min=7, max=7))
+    _validate(7.0, Float(min=6.9, max=7.1))
+    _validate(7.5, Float(min=6, max=8))
+    _validate(7.5, Float(min=6.0, max=8.0))
+
+
+@pytest.mark.parametrize(("value", "min_value"), [
+    (7.0, 8),
+    (7.5, 7.9)
+])
+def test_float_min_invalid(value, min_value):
+    with pytest.raises(InvalidValueError):
+        _validate(value, Float(min=min_value))
+
+
+@pytest.mark.parametrize(("value", "max_value"), [
+    (8.5, 8),
+    (8.5, 8.2)
+])
+def test_float_max_invalid(value, max_value):
+    with pytest.raises(InvalidValueError):
+        _validate(value, Float(max=max_value))
+
+
 
 def test_string():
     _validate("string", String())

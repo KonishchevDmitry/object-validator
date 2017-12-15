@@ -164,21 +164,8 @@ class _BasicType(Object):
         return obj
 
 
-
-class Bool(_BasicType):
-    """Boolean type validator."""
-    _types = (bool,)
-
-
-class Float(_BasicType):
-    """Float type validator."""
-    _types = (float,)
-
-
-class Integer(_BasicType):
-    """Integer type validator."""
-
-    _types = (int, long) if _PY2 else (int,)
+class _BasicNumber(_BasicType):
+    """Base class for number type validators."""
 
     __min = None
     """Minimum value."""
@@ -193,12 +180,12 @@ class Integer(_BasicType):
         if max is not None:
             self.__max = max
 
-        super(Integer, self).__init__(**kwargs)
+        super(_BasicNumber, self).__init__(**kwargs)
 
     def validate(self, obj):
         """Validates the specified object."""
 
-        obj = super(Integer, self).validate(obj)
+        obj = super(_BasicNumber, self).validate(obj)
 
         if (
             self.__min is not None and obj < self.__min or
@@ -207,6 +194,22 @@ class Integer(_BasicType):
             raise InvalidValueError(obj)
 
         return obj
+
+
+class Bool(_BasicType):
+    """Boolean type validator."""
+    _types = (bool,)
+
+
+class Float(_BasicNumber):
+    """Float type validator."""
+    _types = (float,)
+
+
+class Integer(_BasicNumber):
+    """Integer type validator."""
+
+    _types = (int, long) if _PY2 else (int,)
 
 
 class String(_BasicType):
