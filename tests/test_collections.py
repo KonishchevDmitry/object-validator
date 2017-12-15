@@ -7,9 +7,12 @@ import sys
 
 import pytest
 
-from object_validator import Object, Bool, Integer, Float, String, List, Dict, DictScheme
-from object_validator import InvalidTypeError, InvalidListLength, MissingParameterError, UnknownParameterError, \
-    ParameterAlreadyExistsError
+from object_validator import (
+    Object, Bool, Integer, Float,
+    String, List, Dict, DictScheme)
+from object_validator import (
+    InvalidTypeError, InvalidListLength, MissingParameterError,
+    UnknownParameterError, ParameterAlreadyExistsError)
 
 PY2 = sys.version_info < (3,)
 if PY2:
