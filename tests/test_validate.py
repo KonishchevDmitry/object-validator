@@ -44,7 +44,6 @@ SCHEME = List(DictScheme({
 }))
 
 
-
 def test_validate():
     _validate("items", copy.deepcopy(ITEMS), SCHEME)
 
@@ -89,7 +88,6 @@ def test_validate_missing_parameter():
     assert pytest.raises(MissingParameterError, lambda:
         _validate("items", items, SCHEME)
     ).value.object_name == "items[1]['id']"
-
 
 
 def _validate(name, obj, scheme):

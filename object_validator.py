@@ -117,7 +117,6 @@ class ParameterAlreadyExistsError(ValidationError):
         return "{0} already exists.".format(self.object_name)
 
 
-
 class Object(object):
     """Base class for all validators."""
 
@@ -137,7 +136,6 @@ class Object(object):
         """
 
         raise Error("Not implemented.")
-
 
 
 class _BasicType(Object):
@@ -255,7 +253,6 @@ class String(_BasicType):
         return obj
 
 
-
 class List(Object):
     """List validator."""
 
@@ -303,7 +300,6 @@ class List(Object):
         return obj
 
 
-
 class Dict(Object):
     """Dictionary validator."""
 
@@ -312,7 +308,6 @@ class Dict(Object):
 
     __value_scheme = None
     """Value scheme."""
-
 
     def __init__(self, key_scheme=None, value_scheme=None, **kwargs):
         super(Dict, self).__init__(**kwargs)
@@ -353,7 +348,6 @@ class Dict(Object):
         return obj
 
 
-
 class DictScheme(Object):
     """Validator for a dictionary against a dictionary key scheme."""
 
@@ -362,7 +356,6 @@ class DictScheme(Object):
 
     __delete_unknown = False
     """Delete unknown keys."""
-
 
     def __init__(self, scheme, ignore_unknown=False, delete_unknown=False, **kwargs):
         super(DictScheme, self).__init__(**kwargs)
@@ -401,7 +394,6 @@ class DictScheme(Object):
                     raise MissingParameterError(_dict_key_name(key))
 
         return obj
-
 
 
 def validate(name, obj, scheme):

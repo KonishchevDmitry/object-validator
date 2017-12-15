@@ -21,7 +21,6 @@ class ToInt(Object):
         return int(obj)
 
 
-
 def test_list_empty():
     _validate([], List(Bool()))
 
@@ -68,7 +67,6 @@ def test_list_min_length_invalid():
 def test_list_max_length_invalid():
     with pytest.raises(InvalidListLength):
         _validate([1, 2, 3], List(min_length=1, max_length=2))
-
 
 
 def test_dict_default():
@@ -133,7 +131,6 @@ def test_dict_invalid_value_scheme():
 
     assert error.object_name == "[False]"
     assert error.object_type == int
-
 
 
 def test_dict_scheme_empty():
@@ -204,7 +201,6 @@ def test_dict_scheme_missing_parameter():
     ).value
 
     assert error.object_name == "[1]"
-
 
 
 def _validate(obj, scheme):
