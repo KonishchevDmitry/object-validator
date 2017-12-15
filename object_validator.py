@@ -442,5 +442,5 @@ def _dict_key_name(key):
     return "[{0}]".format(_repr(key))
 
 
-_repr = ( lambda obj: repr(obj)[1:] if type(obj) is str else repr(obj) ) if _PY2 else repr
+_repr = (lambda obj: repr(obj)[1:] if type(obj) is str else repr(obj)) if _PY2 else repr
 """More friendly version of repr()."""
