@@ -7,9 +7,12 @@ import sys
 
 import pytest
 
-from object_validator import Object, Bool, Integer, Float, String, List, Dict, DictScheme
-from object_validator import InvalidTypeError, InvalidListLength, MissingParameterError, UnknownParameterError, \
-    ParameterAlreadyExistsError
+from object_validator import (
+    Object, Bool, Integer, Float,
+    String, List, Dict, DictScheme)
+from object_validator import (
+    InvalidTypeError, InvalidListLength, MissingParameterError,
+    UnknownParameterError, ParameterAlreadyExistsError)
 
 PY2 = sys.version_info < (3,)
 if PY2:
@@ -19,7 +22,6 @@ if PY2:
 class ToInt(Object):
     def validate(self, obj):
         return int(obj)
-
 
 
 def test_list_empty():
@@ -70,7 +72,6 @@ def test_list_max_length_invalid():
         _validate([1, 2, 3], List(min_length=1, max_length=2))
 
 
-
 def test_dict_default():
     _validate({
         True: 1,
@@ -89,23 +90,23 @@ def test_dict_key_value():
 
 def test_dict_key_modification():
     _validate_modification(
-        { "1": 10, "2": 20 }, Dict(ToInt(), Integer()), { 1: 10, 2: 20 })
+        {"1": 10, "2": 20}, Dict(ToInt(), Integer()), {1: 10, 2: 20})
 
 
 def test_dict_value_modification():
     _validate_modification(
-        { 1: "10", 2: "20" }, Dict(Integer(), ToInt()), { 1: 10, 2: 20 })
+        {1: "10", 2: "20"}, Dict(Integer(), ToInt()), {1: 10, 2: 20})
 
 
 def test_dict_key_value_modification():
     _validate_modification(
-        { "1": "10", "2": "20" }, Dict(ToInt(), ToInt()), { 1: 10, 2: 20 })
+        {"1": "10", "2": "20"}, Dict(ToInt(), ToInt()), {1: 10, 2: 20})
 
 
 def test_dict_invalid_key_modification():
     error = pytest.raises(ParameterAlreadyExistsError, lambda:
         _validate_modification(
-            { 1: "10", "1": "100" }, Dict(ToInt(), None), { 1: 10 })
+            {1: "10", "1": "100"}, Dict(ToInt(), None), {1: 10})
     ).value
 
     assert error.object_name == "[1]"
@@ -133,7 +134,6 @@ def test_dict_invalid_value_scheme():
 
     assert error.object_name == "[False]"
     assert error.object_type == int
-
 
 
 def test_dict_scheme_empty():
@@ -164,21 +164,21 @@ def test_dict_scheme_with_ignore_unknown():
 
 def test_dict_scheme_with_delete_unknown():
     _validate_modification(
-        {"known_key": 10, "unknown_key": 10,},
+        {"known_key": 10, "unknown_key": 10},
         DictScheme({"known_key": Integer()}, delete_unknown=True),
         {"known_key": 10})
 
 
 def test_dict_scheme_modification():
     _validate_modification(
-        { "1": "10", "2": "20", "3": "30" },
-        DictScheme({ "1": ToInt(), "2": String(), "3": ToInt() }),
-        { "1": 10, "2": "20", "3": 30 })
+        {"1": "10", "2": "20", "3": "30"},
+        DictScheme({"1": ToInt(), "2": String(), "3": ToInt()}),
+        {"1": 10, "2": "20", "3": 30})
 
 
 def test_dict_scheme_invalid_type():
     error = pytest.raises(InvalidTypeError, lambda:
-       _validate([],  DictScheme({}))
+        _validate([], DictScheme({}))
     ).value
 
     assert error.object_name == ""
@@ -204,7 +204,6 @@ def test_dict_scheme_missing_parameter():
     ).value
 
     assert error.object_name == "[1]"
-
 
 
 def _validate(obj, scheme):

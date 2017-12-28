@@ -7,8 +7,12 @@ import sys
 
 import pytest
 
-from object_validator import Bool, Integer, Float, String, List, Dict, DictScheme, validate
-from object_validator import InvalidTypeError, InvalidValueError, UnknownParameterError, MissingParameterError
+from object_validator import (
+    Bool, Integer, Float, String,
+    List, Dict, DictScheme, validate)
+from object_validator import (
+    InvalidTypeError, InvalidValueError,
+    UnknownParameterError, MissingParameterError)
 
 PY2 = sys.version_info < (3,)
 if PY2:
@@ -42,7 +46,6 @@ SCHEME = List(DictScheme({
     "dividers": List(Integer()),
     "dividers_map": Dict(Integer(), Float()),
 }))
-
 
 
 def test_validate():
@@ -89,7 +92,6 @@ def test_validate_missing_parameter():
     assert pytest.raises(MissingParameterError, lambda:
         _validate("items", items, SCHEME)
     ).value.object_name == "items[1]['id']"
-
 
 
 def _validate(name, obj, scheme):

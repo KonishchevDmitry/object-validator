@@ -20,18 +20,18 @@ class PyTest(Test):
 if __name__ == "__main__":
     with open("README") as readme:
         setup(
-            name = "object-validator",
-            version = "0.1.6",
+            name="object-validator",
+            version="0.1.6",
 
-            description = readme.readline().strip(),
-            long_description = readme.read().strip() or None,
-            url = "https://github.com/KonishchevDmitry/object-validator",
+            description=readme.readline().strip(),
+            long_description=readme.read().strip() or None,
+            url="https://github.com/KonishchevDmitry/object-validator",
 
-            license = "GPL3",
-            author = "Dmitry Konishchev",
-            author_email = "konishchev@gmail.com",
+            license="GPL3",
+            author="Dmitry Konishchev",
+            author_email="konishchev@gmail.com",
 
-            classifiers = [
+            classifiers=[
                 "Development Status :: 4 - Beta",
                 "Intended Audience :: Developers",
                 "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
@@ -42,10 +42,10 @@ if __name__ == "__main__":
                 "Programming Language :: Python :: 3",
                 "Topic :: Software Development :: Libraries :: Python Modules",
             ],
-            platforms = [ "unix", "linux", "osx" ],
+            platforms=["unix", "linux", "osx"],
 
-            py_modules = [ "object_validator" ],
+            py_modules=["object_validator"],
 
-            cmdclass = { "test": PyTest },
-            tests_require = [ "pytest" ],
+            cmdclass={"test": PyTest},
+            tests_require=["pytest"],
         )

@@ -27,7 +27,6 @@ def test_bool_invalid_type():
     assert error.object_type == int
 
 
-
 def test_integer_int():
     _validate(1, Integer())
 
@@ -58,7 +57,6 @@ def test_integer_min_invalid():
 def test_integer_max_invalid():
     with pytest.raises(InvalidValueError):
         _validate(5, Integer(max=4))
-
 
 
 def test_float():
@@ -99,7 +97,6 @@ def test_float_max_invalid(value, max_value):
         _validate(value, Float(max=max_value))
 
 
-
 def test_string():
     _validate("string", String())
 
@@ -136,7 +133,6 @@ def test_string_regex_invalid():
         _validate("12345", String(regex=r"^\d{4}$"))
 
 
-
 def test_choices():
     _validate("b", String(choices=("a", "b")))
 
@@ -148,7 +144,6 @@ def test_choices_invalid_value():
 
     assert error.object_name == ""
     assert error.object_value == "c"
-
 
 
 def _validate(obj, scheme):
