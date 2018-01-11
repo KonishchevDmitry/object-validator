@@ -1,3 +1,8 @@
+Version 0.2.0
+-------------
+ * base class for numbers types with min/max validations
+ * flake8 linting and tox tests automation
+
 Version 0.1.6
 -------------
  * No changes - just bump version because of PyPI error

@@ -3,7 +3,7 @@
 NAME     = object-validator
 RPM_NAME := python-$(NAME)
 PYTHON   := python
-VERSION  := 0.1.6
+VERSION  := 0.2.0
 
 build:
 	$(PYTHON) setup.py build
