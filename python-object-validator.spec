@@ -19,7 +19,7 @@
 %bcond_without tests
 
 Name:    python-%project_name
-Version: 0.1.6
+Version: 0.2.0
 Release: 1%{?dist}
 Summary: Python object validation module
 
@@ -115,6 +115,25 @@ make PYTHON=%{__python3} INSTALL_FLAGS="-O1 --root '%buildroot'" install
 
 
 %changelog
+* Thu Jan 11 2018 Dmitry Konishchev <konishchev@gmail.com> - 0.2.0-1
+- base class for numbers types with min/max validations
+- flake8 linting and tox tests automation
+
+* Tue Apr 26 2016 Dmitry Konishchev <konishchev@gmail.com> - 0.1.6-1
+- Bump version because of PyPI error
+
+* Tue Apr 26 2016 Dmitry Konishchev <konishchev@gmail.com> - 0.1.5-1
+- min_length and max_length options for List validator
+
+* Thu Sep 03 2015 Dmitry Konishchev <konishchev@gmail.com> - 0.1.4-1
+- regex option for String validator
+
+* Wed Feb 25 2015 Dmitry Konishchev <konishchev@gmail.com> - 0.1.3-1
+- min_length and max_length options for String validator
+
+* Tue Dec 16 2014 Dmitry Konishchev <konishchev@gmail.com> - 0.1.2-1
+- delete_unknown parameter for DictScheme validator
+
 * Mon Nov 24 2014 Dmitry Konishchev <konishchev@gmail.com> - 0.1.1-1
 - New version.
 
