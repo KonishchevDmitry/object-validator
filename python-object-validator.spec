@@ -116,7 +116,7 @@ make PYTHON=%{__python3} INSTALL_FLAGS="-O1 --root '%buildroot'" install
 
 %changelog
 * Thu Jan 11 2018 Dmitry Konishchev <konishchev@gmail.com> - 0.2.0-1
-- base class for numbers types with min/max validations
+- Base class for number types with min/max validators
 - flake8 linting and tox tests automation
 
 * Tue Apr 26 2016 Dmitry Konishchev <konishchev@gmail.com> - 0.1.6-1
