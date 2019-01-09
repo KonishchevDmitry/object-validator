@@ -144,7 +144,7 @@ make PYTHON=%{__python3_other} INSTALL_FLAGS="-O1 --root '%buildroot'" install
 
 
 %changelog
-* Wed Jan 09 2019 Dmitry Konishchev <konishchev@gmail.com> - 0.2.0-2
+* Wed Jan 09 2019 Mikhail Ushanov <gm.mephisto@gmail.com> - 0.2.0-2
 - Add python3 package build for EPEL
 
 * Thu Jan 11 2018 Dmitry Konishchev <konishchev@gmail.com> - 0.2.0-1
