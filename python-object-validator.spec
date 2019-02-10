@@ -25,12 +25,7 @@ supposed to be used for validation of configuration files represented as JSON
 or for validation of JSON-PRC requests, but it can be easily extended to
 validate arbitrary Python objects or to support custom validation rules.}
 
-# Temporarily disable tests for python3_other
-%if 0%{with python3_other}
-%bcond_with tests
-%else
 %bcond_without tests
-%endif
 
 Name:    python-%project_name
 Version: 0.2.0
