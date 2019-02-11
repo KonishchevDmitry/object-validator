@@ -25,16 +25,11 @@ supposed to be used for validation of configuration files represented as JSON
 or for validation of JSON-PRC requests, but it can be easily extended to
 validate arbitrary Python objects or to support custom validation rules.}
 
-# Temporarily disable tests for python3_other
-%if 0%{with python3_other}
-%bcond_with tests
-%else
 %bcond_without tests
-%endif
 
 Name:    python-%project_name
 Version: 0.2.0
-Release: 2%{?dist}
+Release: 3%{?dist}
 Summary: Python object validation module
 
 Group:   Development/Libraries
@@ -144,6 +139,9 @@ make PYTHON=%{__python3_other} INSTALL_FLAGS="-O1 --root '%buildroot'" install
 
 
 %changelog
+* Sun Feb 10 2019 Mikhail Ushanov <gm.mephisto@gmail.com> - 0.2.0-3
+- Enable tests for python36
+
 * Wed Jan 09 2019 Mikhail Ushanov <gm.mephisto@gmail.com> - 0.2.0-2
 - Add python3 package build for EPEL
 
