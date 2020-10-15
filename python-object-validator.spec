@@ -33,7 +33,7 @@ Release: 3%{?dist}
 Summary: Python object validation module
 
 Group:   Development/Libraries
-License: GPLv3
+License: MIT
 URL:     https://github.com/KonishchevDmitry/%project_name
 Source:  http://pypi.python.org/packages/source/o/%project_name/%project_name-%version.tar.gz
 

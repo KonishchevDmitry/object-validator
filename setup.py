@@ -27,14 +27,14 @@ if __name__ == "__main__":
             long_description=readme.read().strip() or None,
             url="https://github.com/KonishchevDmitry/object-validator",
 
-            license="GPL3",
+            license="MIT",
             author="Dmitry Konishchev",
             author_email="konishchev@gmail.com",
 
             classifiers=[
                 "Development Status :: 4 - Beta",
                 "Intended Audience :: Developers",
-                "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
+                "License :: OSI Approved :: MIT License",
                 "Operating System :: MacOS :: MacOS X",
                 "Operating System :: POSIX",
                 "Operating System :: Unix",
