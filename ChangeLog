@@ -1,3 +1,7 @@
+Version 0.2.1
+-------------
+ * Change licence to more permissive (MIT)
+
 Version 0.2.0
 -------------
  * Base class for number types with min/max validators

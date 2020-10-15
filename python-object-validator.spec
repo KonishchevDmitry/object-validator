@@ -28,12 +28,12 @@ validate arbitrary Python objects or to support custom validation rules.}
 %bcond_without tests
 
 Name:    python-%project_name
-Version: 0.2.0
-Release: 3%{?dist}
+Version: 0.2.1
+Release: 1%{?dist}
 Summary: Python object validation module
 
 Group:   Development/Libraries
-License: GPLv3
+License: MIT
 URL:     https://github.com/KonishchevDmitry/%project_name
 Source:  http://pypi.python.org/packages/source/o/%project_name/%project_name-%version.tar.gz
 
